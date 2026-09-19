@@ -441,6 +441,13 @@ async function handleCatalogRequest(
     const catalogCacheKey = `catalog:${userId}:${catalogId}:${type}:${skip}:${extra.genre || ''}:${stremioExtraMode}:${configVersion}`;
     const serverTtl = catalogServerTtl(listType);
 
+    // Per-catalog display language (poster/title localization) takes priority
+    // over the account-wide default so the installed addon matches preview.
+    const displayLanguage =
+      resolvedFilters?.displayLanguage ||
+      catalogConfig.filters?.displayLanguage ||
+      config.preferences?.defaultLanguage;
+
     const computeCatalogMetas = async (): Promise<StremioMetaPreview[]> => {
       let result: { results?: unknown[] } | null = null;
 
@@ -448,11 +455,11 @@ async function handleCatalogRequest(
         if (/^tt\d{7,8}$/i.test(search.trim())) {
           try {
             const found = await tmdb.findByImdbId(apiKey, search.trim(), type, {
-              language: config.preferences?.defaultLanguage,
+              language: displayLanguage,
             });
             if (found?.tmdbId) {
               const details = (await tmdb.getDetails(apiKey, found.tmdbId, type, {
-                displayLanguage: config.preferences?.defaultLanguage,
+                displayLanguage,
               })) as TmdbDetails | null;
               if (details) {
                 (details as TmdbDetails & { imdb_id?: string }).imdb_id =
@@ -470,14 +477,14 @@ async function handleCatalogRequest(
 
         if (!result) {
           result = await tmdb.comprehensiveSearch(apiKey, search, type, page, {
-            displayLanguage: config.preferences?.defaultLanguage,
+            displayLanguage,
             includeAdult: config.preferences?.includeAdult,
           });
         }
       } else if (listType && listType !== 'discover') {
         result = (await tmdb.fetchSpecialList(apiKey, listType, type, {
           page,
-          displayLanguage: config.preferences?.defaultLanguage,
+          displayLanguage,
           language: resolvedFilters?.language || catalogConfig.filters?.language,
           region: resolvedFilters?.countries || catalogConfig.filters?.countries,
           collectionId: resolvedFilters?.collectionId || catalogConfig.filters?.collectionId,
@@ -507,14 +514,13 @@ async function handleCatalogRequest(
         result = (await tmdb.discover(apiKey, {
           type,
           ...(resolvedFilters as Record<string, unknown>),
-          displayLanguage: config.preferences?.defaultLanguage,
+          displayLanguage,
           page,
           randomize,
         })) as { results?: unknown[] } | null;
       }
 
       const allItems = (result?.results || []) as TmdbResult[];
-      const displayLanguage = config.preferences?.defaultLanguage;
 
       const tmdbIds = allItems.map((item) => item.id);
       const detailsMap = await tmdb.batchGetDetails(apiKey, tmdbIds, type, { displayLanguage });
