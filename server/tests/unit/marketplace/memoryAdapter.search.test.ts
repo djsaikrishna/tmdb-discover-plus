@@ -187,6 +187,14 @@ describe('MemoryAdapter search visibility & governance (Req 7.1, 7.2, 18.2)', ()
     const count = await adapter.countMarketplaceEntries({});
     expect(count).toBe(2);
   });
+
+  it('returns the exact count above 1,000 entries', async () => {
+    await Promise.all(
+      Array.from({ length: 1001 }, () => adapter.upsertMarketplaceEntry(withUniqueOrigin()))
+    );
+
+    expect(await adapter.countMarketplaceEntries({})).toBe(1001);
+  });
 });
 
 describe('MemoryAdapter origin-pair dedupe (Req 5.5 / Req 1.10)', () => {

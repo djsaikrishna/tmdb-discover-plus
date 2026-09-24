@@ -17,7 +17,7 @@ const { Pool } = pg;
 const { W_TEXT, W_FUZZY, W_FACET, W_POP, POP_INSTALLS_WEIGHT, POP_LIKES_WEIGHT, FUZZY_THRESHOLD } =
   MARKETPLACE_RANKING;
 
-const { TOTAL_COUNT_CAP, ADAPTER_RESPONSE_CAP } = MARKETPLACE_PAGINATION;
+const { ADAPTER_RESPONSE_CAP } = MARKETPLACE_PAGINATION;
 
 // Text-search configuration used consistently for both indexing (to_tsvector) and
 // querying (websearch_to_tsquery) so ranking is comparable across writes/reads.
@@ -361,17 +361,7 @@ export class PostgresAdapter implements IStorageAdapter {
 
   async countMarketplaceEntries(params: MarketplaceSearchParams): Promise<number> {
     const { whereSql, values } = this.buildSearchFilter(params);
-    values.push(TOTAL_COUNT_CAP);
-    const capIdx = values.length;
-
-    // Capped count: stop scanning at TOTAL_COUNT_CAP to avoid an expensive COUNT(*).
-    const sql = `
-      SELECT COUNT(*)::int AS count FROM (
-        SELECT 1 FROM marketplace_entries
-        WHERE ${whereSql}
-        LIMIT $${capIdx}
-      ) sub
-    `;
+    const sql = `SELECT COUNT(*)::int AS count FROM marketplace_entries WHERE ${whereSql}`;
     const res = await this.pool.query(sql, values);
     return res.rows[0].count as number;
   }

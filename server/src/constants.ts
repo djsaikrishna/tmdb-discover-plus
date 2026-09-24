@@ -92,8 +92,6 @@ export const MARKETPLACE_PAGINATION = {
   DEFAULT_PAGE_SIZE: 24,
   MIN_PAGE_SIZE: 1,
   MAX_PAGE_SIZE: 50,
-  // Total match count is estimated and capped at this maximum.
-  TOTAL_COUNT_CAP: 1_000,
   // A storage adapter returns at most this many entries per search request,
   // while still reporting the full match count independent of this cap.
   ADAPTER_RESPONSE_CAP: 100,

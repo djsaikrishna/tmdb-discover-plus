@@ -509,7 +509,7 @@ export async function reconcileMarketplaceEntries(
 // ---------------------------------------------------------------------------
 
 const { MAX_QUERY_LENGTH } = MARKETPLACE_LIMITS;
-const { DEFAULT_PAGE_SIZE, MIN_PAGE_SIZE, MAX_PAGE_SIZE, TOTAL_COUNT_CAP } = MARKETPLACE_PAGINATION;
+const { DEFAULT_PAGE_SIZE, MIN_PAGE_SIZE, MAX_PAGE_SIZE } = MARKETPLACE_PAGINATION;
 
 const VALID_TYPES = new Set<string>(MARKETPLACE_TYPES);
 const VALID_SORTS = new Set<string>(MARKETPLACE_SORT_MODES);
@@ -665,7 +665,7 @@ function isPublicActive(entry: MarketplaceEntry): boolean {
  * filtering, the fuzzy `>= 0.70` name-similarity gate, the composite score
  * (name-weighted highest, log-dampened popularity), and the stable
  * `marketplaceId` tiebreak; this layer projects the returned rows to the
- * secret-free wire shape and reports the capped total.
+ * secret-free wire shape and reports the total match count.
  *
  * Pagination is exposed to callers as a zero-based page index (Req 9.4), while
  * the storage adapter expects a 1-based page (`start = (page - 1) * limit`); the
@@ -673,7 +673,7 @@ function isPublicActive(entry: MarketplaceEntry): boolean {
  *
  * Results are cached per canonicalized signature with stampede protection. The
  * loader asserts every returned row is public + active before projecting it, and
- * the reported total is the estimated matched count capped at 1000 (Req 9.6).
+ * the reported total is the matched count (Req 9.6).
  * When the resolved page begins at or beyond the total, the adapter naturally
  * returns no rows and the empty page is reported alongside the resolved page,
  * limit, sort, and total (Req 9.7, 9.8).
@@ -723,7 +723,7 @@ export async function searchMarketplace(
     const visible = rows.filter(isPublicActive);
 
     const items = visible.map(toSearchCard);
-    const total = Math.min(Math.max(0, Math.floor(matched)), TOTAL_COUNT_CAP);
+    const total = Math.max(0, Math.floor(matched));
 
     return { items, page, limit, total, sort } satisfies MarketplaceSearchResult;
   })) as MarketplaceSearchResult;

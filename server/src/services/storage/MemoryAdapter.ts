@@ -19,7 +19,7 @@ const log = createLogger('MemoryAdapter');
 
 const { FUZZY_THRESHOLD } = MARKETPLACE_RANKING;
 
-const { TOTAL_COUNT_CAP, ADAPTER_RESPONSE_CAP } = MARKETPLACE_PAGINATION;
+const { ADAPTER_RESPONSE_CAP } = MARKETPLACE_PAGINATION;
 
 function isSearchable(entry: MarketplaceEntry): boolean {
   return entry.visibility === 'public' && entry.moderation === 'active';
@@ -195,7 +195,7 @@ export class MemoryAdapter implements IStorageAdapter {
   async countMarketplaceEntries(params: MarketplaceSearchParams): Promise<number> {
     const query = (params.q ?? '').trim();
     const matched = this.selectMatches(params, query);
-    return Math.min(matched.length, TOTAL_COUNT_CAP);
+    return matched.length;
   }
 
   async incrementMarketplaceCounter(
