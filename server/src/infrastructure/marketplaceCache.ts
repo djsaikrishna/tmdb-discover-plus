@@ -197,9 +197,6 @@ export class MarketplaceCache {
         this.cache.delete(existingKey);
       }
     }
-    log.debug('Marketplace search namespace invalidated', {
-      namespaceVersion: this.searchNamespaceVersion,
-    });
   }
 
   /** Clear all entries and pending loads. */

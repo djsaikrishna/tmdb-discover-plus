@@ -6,6 +6,7 @@ import type {
   ArtworkOptions,
   PosterOptions,
   PosterServiceType,
+  TmdbDetails,
 } from '../types/index.ts';
 import type { StremioMetaPreview } from '../types/stremio.ts';
 import { readFileSync, existsSync } from 'fs';
@@ -2095,9 +2096,23 @@ router.post('/preview', requireAuth, resolveApiKey, async (req, res) => {
         }
       }
 
-      const metas = previewResults.map((item) => {
-        return tmdb.toStremioMeta(item, type, null, null, genreMap);
-      });
+      const localizedDetails = displayLanguage
+        ? await tmdb.batchGetPreviewDetails(
+            apiKey,
+            previewResults.map((item) => item.id),
+            type,
+            { displayLanguage }
+          )
+        : null;
+
+      const metas = await Promise.all(
+        previewResults.map((item) => {
+          const details = localizedDetails?.get(item.id) as TmdbDetails | undefined;
+          return details
+            ? tmdb.toStremioMetaPreview(details, type, null, displayLanguage, null)
+            : tmdb.toStremioMeta(item, type, null, null, genreMap);
+        })
+      );
 
       filteredMetas = metas.filter(Boolean);
     }

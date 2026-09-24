@@ -157,6 +157,12 @@ async function runMarketplaceReconciliation(): Promise<void> {
   } finally {
     marketplaceReconciliationStatus.running = false;
     marketplaceReconciliationStatus.finishedAt = new Date().toISOString();
+    log.info('Marketplace reconciliation completed', {
+      processed: marketplaceReconciliationStatus.processedConfigs,
+      failed: marketplaceReconciliationStatus.failedConfigs,
+      eligible: marketplaceReconciliationStatus.eligibleCatalogs,
+      published: marketplaceReconciliationStatus.publishedCatalogs,
+    });
   }
 }
 
@@ -491,15 +497,7 @@ export async function reconcileMarketplaceEntries(
     );
   }
 
-  // Success: clear the search namespace so the index changes are visible to
-  // subsequent queries.
-  getMarketplaceCache().invalidateSearchNamespace();
-
-  log.info('Reconciled marketplace entries', {
-    userId,
-    published: nextPublished.size,
-    mutated,
-  });
+  if (mutated) getMarketplaceCache().invalidateSearchNamespace();
 
   return { eligible: nextPublished.size, published: publishedCount, mutated };
 }

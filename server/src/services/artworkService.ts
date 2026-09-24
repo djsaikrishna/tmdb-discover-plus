@@ -882,12 +882,8 @@ const tmdbProvider: ArtworkProviderDefinition = {
   id: 'tmdb',
   supportedKinds: METAHUB_SUPPORTED_KINDS,
   requiresApiKey: false,
-  resolve(context, kind) {
-    const imdbId = context.imdbId;
-    if (!imdbId || !imdbId.startsWith('tt')) return null;
-    const metahubKind = METAHUB_KIND_MAP[kind];
-    if (!metahubKind) return null;
-    return metahubUrl(metahubKind, imdbId);
+  resolve() {
+    return null;
   },
 };
 
@@ -1065,7 +1061,7 @@ export async function applyArtworkOverrides(
     }
 
     // Default mode ('none'): TMDB-first, then source-native fallback.
-    url = metahubFallback(kind, effectiveContext.imdbId);
+    url = resolveTmdbFallback(kind, effectiveContext, nativeUrls);
     if (!url) {
       url = nativeUrls[kind] ?? null;
     }
@@ -1133,7 +1129,7 @@ export function applyArtworkOverridesSync(
     }
 
     // Default mode ('none'): TMDB-first, then source-native fallback.
-    url = metahubFallback(kind, effectiveContext.imdbId);
+    url = resolveTmdbFallback(kind, effectiveContext, nativeUrls);
     if (!url) {
       url = nativeUrls[kind] ?? null;
     }
@@ -1490,9 +1486,7 @@ export const PosterService = {
 
 export function createPosterOptions(
   preferences:
-    | { artwork?: ArtworkSettings | Record<string, ArtworkSourceConfig> }
-    | null
-    | undefined,
+    { artwork?: ArtworkSettings | Record<string, ArtworkSourceConfig> } | null | undefined,
   decryptFn: (encrypted: string) => string | null
 ): PosterOptions | null {
   return createArtworkOptions(preferences, decryptFn, 'movie').poster;

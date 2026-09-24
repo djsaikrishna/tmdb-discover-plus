@@ -147,6 +147,23 @@ describe('toStremioMetaPreview — poster fallbacks', () => {
     expect(result?.poster).toContain('/poster.jpg');
   });
 
+  it('prefers artwork matching the display language over poster_path', async () => {
+    const details = {
+      ...baseDetails,
+      poster_path: '/default-poster.jpg',
+      images: {
+        posters: [
+          { file_path: '/english-poster.jpg', iso_639_1: 'en' },
+          { file_path: '/hindi-poster.jpg', iso_639_1: 'hi' },
+        ],
+      },
+    } as any;
+
+    const result = await toStremioMetaPreview(details, 'movie', null, 'hi-IN');
+
+    expect(result?.poster).toContain('/hindi-poster.jpg');
+  });
+
   it('falls back to images.posters when poster_path is null', async () => {
     const details = {
       ...baseDetails,

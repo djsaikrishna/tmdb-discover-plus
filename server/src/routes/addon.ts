@@ -436,17 +436,16 @@ async function handleCatalogRequest(
       resolvedFilters?.sortBy === 'random'
     );
 
-    const cache = getCache();
-    const configVersion = config.updatedAt ? new Date(config.updatedAt).getTime() : 0;
-    const catalogCacheKey = `catalog:${userId}:${catalogId}:${type}:${skip}:${extra.genre || ''}:${stremioExtraMode}:${configVersion}`;
-    const serverTtl = catalogServerTtl(listType);
-
-    // Per-catalog display language (poster/title localization) takes priority
-    // over the account-wide default so the installed addon matches preview.
     const displayLanguage =
+      extra.displayLanguage ||
       resolvedFilters?.displayLanguage ||
       catalogConfig.filters?.displayLanguage ||
       config.preferences?.defaultLanguage;
+
+    const cache = getCache();
+    const configVersion = config.updatedAt ? new Date(config.updatedAt).getTime() : 0;
+    const catalogCacheKey = `catalog:${userId}:${catalogId}:${type}:${skip}:${extra.genre || ''}:${stremioExtraMode}:${displayLanguage || ''}:${configVersion}`;
+    const serverTtl = catalogServerTtl(listType);
 
     const computeCatalogMetas = async (): Promise<StremioMetaPreview[]> => {
       let result: { results?: unknown[] } | null = null;

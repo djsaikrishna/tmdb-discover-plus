@@ -43,6 +43,13 @@ import { formatRuntime, generateSlug } from '../common/stremioHelpers.ts';
 
 export { formatRuntime, generateSlug };
 
+function localizedPosterPath(details: TmdbDetails, targetLanguage?: string | null): string | null {
+  const language = targetLanguage?.split('-')[0];
+  return language
+    ? details.images?.posters?.find((image) => image.iso_639_1 === language)?.file_path || null
+    : null;
+}
+
 const log = createLogger('tmdb:stremioMeta');
 
 function buildCredits(details: AnyTmdbDetails, isMovie: boolean) {
@@ -436,7 +443,12 @@ export async function toStremioFullMeta(
     defaultVideoId: isMovie ? effectiveImdbId || `tmdb:${details.id}` : null,
     hasScheduledVideos: !isMovie && (status === 'Returning Series' || status === 'In Production'),
   };
-  let poster = details.poster_path ? `${TMDB_IMAGE_BASE}/w780${details.poster_path}` : null;
+  const localizedPoster = localizedPosterPath(details, targetLanguage);
+  let poster = localizedPoster
+    ? `${TMDB_IMAGE_BASE}/w780${localizedPoster}`
+    : details.poster_path
+      ? `${TMDB_IMAGE_BASE}/w780${details.poster_path}`
+      : null;
   let background = details.backdrop_path
     ? `${TMDB_IMAGE_BASE}/original${details.backdrop_path}`
     : null;
@@ -700,9 +712,12 @@ export async function toStremioMetaPreview(
     if (best) nativeLogo = `${TMDB_IMAGE_BASE}/original${best.file_path}`;
   }
 
-  let nativePoster = details.poster_path
-    ? `${TMDB_IMAGE_BASE}/${POSTER_SIZE}${details.poster_path}`
-    : null;
+  const localizedPoster = localizedPosterPath(details, targetLanguage);
+  let nativePoster = localizedPoster
+    ? `${TMDB_IMAGE_BASE}/${POSTER_SIZE}${localizedPoster}`
+    : details.poster_path
+      ? `${TMDB_IMAGE_BASE}/${POSTER_SIZE}${details.poster_path}`
+      : null;
   let nativeBackground = details.backdrop_path
     ? `${TMDB_IMAGE_BASE}/${BACKDROP_SIZE}${details.backdrop_path}`
     : null;

@@ -146,7 +146,7 @@ export class MongoAdapter implements IStorageAdapter {
     return UserConfig.findOneAndUpdate(
       { userId: String(config.userId) },
       { $set: config },
-      { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
+      { returnDocument: 'after', upsert: true, runValidators: true, setDefaultsOnInsert: true }
     )
       .lean<UserConfigType>()
       .exec() as Promise<UserConfigType>;
@@ -234,7 +234,7 @@ export class MongoAdapter implements IStorageAdapter {
     const updated = await MarketplaceEntryModel.findOneAndUpdate(
       filter,
       { $set: set, $setOnInsert: setOnInsert },
-      { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
+      { returnDocument: 'after', upsert: true, runValidators: true, setDefaultsOnInsert: true }
     )
       .lean<MarketplaceEntryDoc>()
       .exec();
@@ -301,7 +301,7 @@ export class MongoAdapter implements IStorageAdapter {
       const doc = await MarketplaceEntryModel.findOneAndUpdate(
         { marketplaceId: String(marketplaceId), [path]: { $gt: 0 } },
         { $inc: { [path]: delta }, $set: { 'engagement.lastEngagedAt': now } },
-        { new: true }
+        { returnDocument: 'after' }
       )
         .lean<MarketplaceEntryDoc>()
         .exec();
@@ -318,7 +318,7 @@ export class MongoAdapter implements IStorageAdapter {
     const doc = await MarketplaceEntryModel.findOneAndUpdate(
       { marketplaceId: String(marketplaceId) },
       { $inc: { [path]: delta }, $set: { 'engagement.lastEngagedAt': now } },
-      { new: true }
+      { returnDocument: 'after' }
     )
       .lean<MarketplaceEntryDoc>()
       .exec();
@@ -335,7 +335,7 @@ export class MongoAdapter implements IStorageAdapter {
     const doc = await MarketplaceEntryModel.findOneAndUpdate(
       { marketplaceId: String(marketplaceId) },
       { $set: { 'engagement.trendingScore': safe } },
-      { new: true }
+      { returnDocument: 'after' }
     )
       .lean<MarketplaceEntryDoc>()
       .exec();

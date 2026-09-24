@@ -231,6 +231,25 @@ describe('requiresAsyncArtworkResolution', () => {
 });
 
 describe('applyArtworkOverridesToMetaPreviews', () => {
+  it.each(['tmdb', 'none'] as const)(
+    'keeps native TMDB poster for %s mode when an IMDb ID is available',
+    (service) => {
+      const resolved = applyArtworkOverridesSync(
+        { type: 'movie', imdbId: 'tt0137523', tmdbId: 550 },
+        { poster: 'https://image.tmdb.org/t/p/w500/localized-poster.jpg' },
+        {
+          poster: service === 'none' ? null : { service },
+          backdrop: null,
+          logo: null,
+          landscape: null,
+          episode: null,
+        }
+      );
+
+      expect(resolved.poster).toBe('https://image.tmdb.org/t/p/w500/localized-poster.jpg');
+    }
+  );
+
   it('keeps native poster when TMDB provider cannot resolve an ID-backed poster', () => {
     const resolved = applyArtworkOverridesSync(
       { type: 'anime', imdbId: null, tmdbId: 0 },
