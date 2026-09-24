@@ -23,13 +23,6 @@ export class RedisAdapter implements ICacheAdapter {
     try {
       const val = await this.client.get(key);
       if (val) {
-        if (key.includes('tmdb_')) {
-          log.debug(`Redis GET ${key}:`, {
-            type: typeof val,
-            length: val.length,
-            preview: val.substring(0, 100),
-          });
-        }
         return JSON.parse(val);
       }
       return null;
@@ -42,13 +35,6 @@ export class RedisAdapter implements ICacheAdapter {
   async set(key: string, value: unknown, ttlSeconds: number): Promise<void> {
     try {
       const stringified = JSON.stringify(value);
-      if (key.includes('tmdb_')) {
-        log.debug(`Redis SET ${key}:`, {
-          originalType: typeof value,
-          stringLength: stringified.length,
-          ttl: ttlSeconds,
-        });
-      }
       await this.client.set(key, stringified, { EX: ttlSeconds });
     } catch (err) {
       log.warn('Redis set error', { key, error: (err as Error).message });

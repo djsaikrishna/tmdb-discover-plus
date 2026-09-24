@@ -43,7 +43,9 @@ function buildIndexes(entries: AnimeIdEntry[]): void {
     if (entry.anilist_id) newByAnilist.set(entry.anilist_id, entry);
     if (entry.mal_id) newByMal.set(entry.mal_id, entry);
     if (entry.kitsu_id) newByKitsu.set(entry.kitsu_id, entry);
-    if (entry.imdb_id) newByImdb.set(entry.imdb_id.toLowerCase(), entry);
+    if (typeof entry.imdb_id === 'string' && entry.imdb_id) {
+      newByImdb.set(entry.imdb_id.toLowerCase(), entry);
+    }
     if (entry.simkl_id) newBySimkl.set(entry.simkl_id, entry);
     if (entry.themoviedb_id) newByTmdb.set(entry.themoviedb_id, entry);
     if (entry.anidb_id) newByAnidb.set(entry.anidb_id, entry);
@@ -133,7 +135,7 @@ export function isAnimeIdMapReady(): boolean {
 
 function entryToStremioId(entry: AnimeIdEntry | undefined): string | null {
   if (!entry) return null;
-  if (entry.imdb_id) return entry.imdb_id;
+  if (typeof entry.imdb_id === 'string' && entry.imdb_id) return entry.imdb_id;
   if (entry.kitsu_id) return `kitsu:${entry.kitsu_id}`;
   return null;
 }

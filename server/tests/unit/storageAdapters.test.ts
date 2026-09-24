@@ -106,7 +106,7 @@ describe('MongoAdapter', () => {
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
         { userId: 'user1' },
         { $set: config },
-        expect.objectContaining({ new: true, upsert: true })
+        expect.objectContaining({ returnDocument: 'after', upsert: true })
       );
     });
   });
