@@ -17,7 +17,8 @@ export function malToStremioMeta(
   const stremioId = mappedStremioId || `mal:${anime.id}`;
 
   const mapEntry = getEntryByMalId(anime.id);
-  const imdbId = mapEntry?.imdb_id || (stremioId.startsWith('tt') ? stremioId : null);
+  const mappedImdbId = typeof mapEntry?.imdb_id === 'string' ? mapEntry.imdb_id : null;
+  const imdbId = mappedImdbId || (stremioId.startsWith('tt') ? stremioId : null);
   const primaryId = imdbId || stremioId;
   const tmdbId = mapEntry?.themoviedb_id ?? 0;
 
